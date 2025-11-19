@@ -25,6 +25,7 @@ import {
   DialogContent,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { Input } from "@/components/ui/input";
 import { Plus, Pencil, Trash2, Search } from "lucide-react";
 import { createAluno, updateAluno, deleteAluno } from "@/lib/api";
@@ -35,6 +36,8 @@ export default function AlunosPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingAluno, setEditingAluno] = useState<Aluno | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+  const [alunoToDelete, setAlunoToDelete] = useState<string | null>(null);
 
   function handleEdit(aluno: Aluno) {
     setEditingAluno(aluno);
@@ -88,15 +91,22 @@ export default function AlunosPage() {
     }
   }
 
-  async function handleDelete(id: string) {
-    if (confirm("Tem certeza que deseja excluir este aluno?")) {
-      try {
-        await deleteAluno(id);
-        refetch();
-      } catch (error) {
-        console.error("Erro ao excluir aluno:", error);
-        alert("Erro ao excluir aluno.");
-      }
+  function handleDelete(id: string) {
+    setAlunoToDelete(id);
+    setConfirmDialogOpen(true);
+  }
+
+  async function confirmDelete() {
+    if (!alunoToDelete) return;
+
+    try {
+      await deleteAluno(alunoToDelete);
+      refetch();
+    } catch (error) {
+      console.error("Erro ao excluir aluno:", error);
+      alert("Erro ao excluir aluno.");
+    } finally {
+      setAlunoToDelete(null);
     }
   }
 
@@ -201,6 +211,17 @@ export default function AlunosPage() {
           )}
         </CardContent>
       </Card>
+
+      <ConfirmationDialog
+        open={confirmDialogOpen}
+        onOpenChange={setConfirmDialogOpen}
+        title="Confirmar exclusão"
+        description="Tem certeza que deseja excluir este aluno? Esta ação não pode ser desfeita."
+        confirmText="Excluir"
+        cancelText="Cancelar"
+        onConfirm={confirmDelete}
+        variant="destructive"
+      />
     </div>
   );
 }
