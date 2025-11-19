@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -17,28 +16,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Autocomplete } from "@/components/ui/autocomplete";
-import { Plus, Users, GraduationCap } from "lucide-react";
+import { Users, GraduationCap } from "lucide-react";
 import {
-  createMatricula,
   getMatriculasByAluno,
   getMatriculasByTurma,
   getAlunos,
@@ -46,10 +27,10 @@ import {
 } from "@/lib/api";
 import { Matricula, Aluno, Turma } from "@/types";
 import { Badge } from "@/components/ui/badge";
+import { MatriculaForm } from "./components/matricula-form";
 
 // TODO: Adicionar Edição geral e de status de matrícula
 // TODO: Adicionar paginação e filtros avançados
-// TODO: Mudar a busca de turmas e alunos para um componente texto com busca
 
 
 export default function MatriculasPage() {
@@ -57,15 +38,8 @@ export default function MatriculasPage() {
   const [turmas, setTurmas] = useState<Turma[]>([]);
   const [matriculas, setMatriculas] = useState<Matricula[]>([]);
   const [loading, setLoading] = useState(true);
-  const [dialogOpen, setDialogOpen] = useState(false);
   const [viewMode, setViewMode] = useState<"aluno" | "turma">("turma");
   const [selectedId, setSelectedId] = useState<string>("");
-
-  const [formData, setFormData] = useState({
-    alunoId: "",
-    turmaId: "",
-    dataMatricula: new Date().toISOString().split("T")[0],
-  });
 
   useEffect(() => {
     loadData();
@@ -112,59 +86,6 @@ export default function MatriculasPage() {
     }
   }
 
-  function handleNew() {
-    setFormData({
-      alunoId: "",
-      turmaId: "",
-      dataMatricula: new Date().toISOString().split("T")[0],
-    });
-    setDialogOpen(true);
-  }
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    try {
-      await createMatricula({
-        id: {
-          aluno: { 
-            id: formData.alunoId, 
-            nome: "",
-            cpf: '',
-            rg: '',
-            endereco: '',
-            cidade: '',
-            estado: '',
-            cep: '',
-            telefone: '',
-            dataNascimento: '',
-            sexo: '',
-            orgaoEmissor: '',
-            email: '', 
-            nomeMae: '',
-            optin: true,
-          },
-          turma: { id: formData.turmaId,
-            nome: '',
-            cursoId: '',
-            dataInicio: '',
-            dataTermino: '',
-            capacidadeMaxima: 0,
-            ativo: true 
-          },
-        },
-        dataMatricula: formData.dataMatricula,
-      });
-      setDialogOpen(false);
-      alert("Matrícula criada com sucesso!");
-      if (selectedId) {
-        loadMatriculas();
-      }
-    } catch (error) {
-      console.error("Erro ao criar matrícula:", error);
-      alert("Erro ao criar matrícula. Verifique os dados e tente novamente.");
-    }
-  }
-
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -174,93 +95,7 @@ export default function MatriculasPage() {
             Gerencie as matrículas de alunos em turmas
           </p>
         </div>
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger asChild>
-            <Button onClick={handleNew}>
-              <Plus className="mr-2 h-4 w-4" />
-              Nova Matrícula
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-md">
-            <form onSubmit={handleSubmit}>
-              <DialogHeader>
-                <DialogTitle>Nova Matrícula</DialogTitle>
-                <DialogDescription>
-                  Vincule um aluno a uma turma
-                </DialogDescription>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="alunoId">Aluno *</Label>
-                  <Select
-                    value={formData.alunoId}
-                    onValueChange={(value) =>
-                      setFormData({ ...formData, alunoId: value })
-                    }
-                    required
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione um aluno" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {alunos.map((aluno) => (
-                        <SelectItem key={aluno.id} value={aluno.id}>
-                          {aluno.nome}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="turmaId">Turma *</Label>
-                  <Select
-                    value={formData.turmaId}
-                    onValueChange={(value) =>
-                      setFormData({ ...formData, turmaId: value })
-                    }
-                    required
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione uma turma" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {turmas.map((turma) => (
-                        <SelectItem key={turma.id} value={turma.id}>
-                          {turma.nome}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="dataMatricula">Data da Matrícula *</Label>
-                  <Input
-                    id="dataMatricula"
-                    type="date"
-                    value={formData.dataMatricula}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        dataMatricula: e.target.value,
-                      })
-                    }
-                    required
-                  />
-                </div>
-              </div>
-              <DialogFooter>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setDialogOpen(false)}
-                >
-                  Cancelar
-                </Button>
-                <Button type="submit">Salvar</Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
+        <MatriculaForm onMatriculaCreated={loadMatriculas} />
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
