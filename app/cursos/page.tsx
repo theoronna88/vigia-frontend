@@ -48,6 +48,7 @@ export default function CursosPage() {
     register,
     handleSubmit: handleFormSubmit,
     reset,
+    formState: { errors },
   } = useForm<CursoFormData>({
     resolver: zodResolver(cursoFormSchema),
     defaultValues: {
@@ -180,6 +181,9 @@ export default function CursosPage() {
                 <div className="grid gap-2">
                   <Label htmlFor="nome">Nome *</Label>
                   <Input id="nome" {...register("nome")} />
+                  {errors.nome && (
+                    <p className="text-sm text-red-500">{errors.nome.message}</p>
+                  )}
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="descricao">Descrição</Label>
@@ -196,6 +200,11 @@ export default function CursosPage() {
                       min="0"
                       {...register("cargaHoraria", { valueAsNumber: true })}
                     />
+                    {errors.cargaHoraria && (
+                      <p className="text-sm text-red-500">
+                        {errors.cargaHoraria.message}
+                      </p>
+                    )}
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="inicioVigencia">Início da Vigência *</Label>
@@ -204,6 +213,11 @@ export default function CursosPage() {
                       type="date"
                       {...register("inicioVigencia")}
                     />
+                    {errors.inicioVigencia && (
+                      <p className="text-sm text-red-500">
+                        {errors.inicioVigencia.message}
+                      </p>
+                    )}
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="valor">Valor (R$)</Label>
