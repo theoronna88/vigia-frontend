@@ -1,9 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { cursoFormSchema, type CursoFormData } from "./schema";
+import { type CursoFormData } from "./schema";
+import { CursoForm } from "./components/curso-form";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -23,15 +22,9 @@ import {
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Plus, Pencil, Trash2, Search } from "lucide-react";
 import { getCursos, createCurso, updateCurso, deleteCurso } from "@/lib/api";
 import { Curso, CursosDto } from "@/types";
@@ -43,25 +36,6 @@ export default function CursosPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingCurso, setEditingCurso] = useState<Curso | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-
-  const {
-    register,
-    handleSubmit: handleFormSubmit,
-    reset,
-    formState: { errors },
-  } = useForm<CursoFormData>({
-    resolver: zodResolver(cursoFormSchema),
-    defaultValues: {
-      id: "",
-      nome: "",
-      descricao: "",
-      cargaHoraria: 0,
-      valor: 0,
-      inicioVigencia: "",
-      ativo: true,
-      status: "ATIVO",
-    },
-  });
 
   useEffect(() => {
     loadCursos();
@@ -81,31 +55,11 @@ export default function CursosPage() {
 
   function handleEdit(curso: Curso) {
     setEditingCurso(curso);
-    reset({
-      id: curso.id,
-      nome: curso.nome,
-      descricao: curso.descricao || "",
-      cargaHoraria: curso.cargaHoraria,
-      valor: curso.valor || 0,
-      inicioVigencia: curso.inicioVigencia || "",
-      ativo: curso.ativo,
-      status: curso.status,
-    });
     setDialogOpen(true);
   }
 
   function handleNew() {
     setEditingCurso(null);
-    reset({
-      id: "",
-      nome: "",
-      descricao: "",
-      cargaHoraria: 0,
-      inicioVigencia: "",
-      valor: 0,
-      ativo: true,
-      status: "ATIVO",
-    });
     setDialogOpen(true);
   }
 
@@ -168,89 +122,11 @@ export default function CursosPage() {
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-2xl">
-            <form onSubmit={handleFormSubmit(handleSubmit)}>
-              <DialogHeader>
-                <DialogTitle>
-                  {editingCurso ? "Editar Curso" : "Novo Curso"}
-                </DialogTitle>
-                <DialogDescription>
-                  Preencha os dados do curso abaixo
-                </DialogDescription>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="nome">Nome *</Label>
-                  <Input id="nome" {...register("nome")} />
-                  {errors.nome && (
-                    <p className="text-sm text-red-500">{errors.nome.message}</p>
-                  )}
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="descricao">Descrição</Label>
-                  <Textarea id="descricao" {...register("descricao")} rows={4} />
-                </div>
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="cargaHoraria">
-                      Carga Horária (horas) *
-                    </Label>
-                    <Input
-                      id="cargaHoraria"
-                      type="number"
-                      min="0"
-                      {...register("cargaHoraria", { valueAsNumber: true })}
-                    />
-                    {errors.cargaHoraria && (
-                      <p className="text-sm text-red-500">
-                        {errors.cargaHoraria.message}
-                      </p>
-                    )}
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="inicioVigencia">Início da Vigência *</Label>
-                    <Input
-                      id="inicioVigencia"
-                      type="date"
-                      {...register("inicioVigencia")}
-                    />
-                    {errors.inicioVigencia && (
-                      <p className="text-sm text-red-500">
-                        {errors.inicioVigencia.message}
-                      </p>
-                    )}
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="valor">Valor (R$)</Label>
-                    <Input
-                      id="valor"
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      {...register("valor", { valueAsNumber: true })}
-                    />
-                  </div>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    id="ativo"
-                    {...register("ativo")}
-                    className="h-4 w-4"
-                  />
-                  <Label htmlFor="ativo">Curso ativo</Label>
-                </div>
-              </div>
-              <DialogFooter>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setDialogOpen(false)}
-                >
-                  Cancelar
-                </Button>
-                <Button type="submit">Salvar</Button>
-              </DialogFooter>
-            </form>
+            <CursoForm
+              editingCurso={editingCurso}
+              onSubmit={handleSubmit}
+              onCancel={() => setDialogOpen(false)}
+            />
           </DialogContent>
         </Dialog>
       </div>
