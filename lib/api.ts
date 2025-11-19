@@ -15,6 +15,18 @@ import {
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
 
+// Classe customizada para erros da API
+export class ApiError extends Error {
+  constructor(
+    public status: number,
+    public statusText: string,
+    public details?: unknown
+  ) {
+    super(`API Error: ${status} ${statusText}`);
+    this.name = "ApiError";
+  }
+}
+
 // Função auxiliar para fazer requisições
 async function fetchAPI<T>(
   endpoint: string,
@@ -29,7 +41,20 @@ async function fetchAPI<T>(
   });
 
   if (!response.ok) {
-    throw new Error(`API Error: ${response.status} ${response.statusText}`);
+    // Tenta capturar o corpo da resposta de erro
+    let errorDetails: unknown = null;
+    try {
+      errorDetails = await response.json();
+    } catch {
+      // Se não for possível parsear como JSON, tenta como texto
+      try {
+        errorDetails = await response.text();
+      } catch {
+        // Se falhar, deixa errorDetails como null
+      }
+    }
+
+    throw new ApiError(response.status, response.statusText, errorDetails);
   }
 
   // Para respostas 204 No Content
