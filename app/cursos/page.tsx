@@ -24,6 +24,7 @@ import {
   DialogContent,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { Input } from "@/components/ui/input";
 import { Plus, Pencil, Trash2, Search } from "lucide-react";
 import { getCursos, createCurso, updateCurso, deleteCurso } from "@/lib/api";
@@ -36,6 +37,8 @@ export default function CursosPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingCurso, setEditingCurso] = useState<Curso | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+  const [cursoToDelete, setCursoToDelete] = useState<string | null>(null);
 
   useEffect(() => {
     loadCursos();
@@ -89,15 +92,22 @@ export default function CursosPage() {
     }
   }
 
-  async function handleDelete(id: string) {
-    if (confirm("Tem certeza que deseja excluir este curso?")) {
-      try {
-        await deleteCurso(id);
-        loadCursos();
-      } catch (error) {
-        console.error("Erro ao excluir curso:", error);
-        alert("Erro ao excluir curso.");
-      }
+  function handleDelete(id: string) {
+    setCursoToDelete(id);
+    setConfirmDialogOpen(true);
+  }
+
+  async function confirmDelete() {
+    if (!cursoToDelete) return;
+
+    try {
+      await deleteCurso(cursoToDelete);
+      loadCursos();
+    } catch (error) {
+      console.error("Erro ao excluir curso:", error);
+      alert("Erro ao excluir curso.");
+    } finally {
+      setCursoToDelete(null);
     }
   }
 
@@ -222,6 +232,17 @@ export default function CursosPage() {
           )}
         </CardContent>
       </Card>
+
+      <ConfirmationDialog
+        open={confirmDialogOpen}
+        onOpenChange={setConfirmDialogOpen}
+        title="Confirmar exclusão"
+        description="Tem certeza que deseja excluir este curso? Esta ação não pode ser desfeita."
+        confirmText="Excluir"
+        cancelText="Cancelar"
+        onConfirm={confirmDelete}
+        variant="destructive"
+      />
     </div>
   );
 }
