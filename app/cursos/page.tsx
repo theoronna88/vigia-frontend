@@ -1,6 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { cursoFormSchema, type CursoFormData } from "./schema";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -41,15 +44,22 @@ export default function CursosPage() {
   const [editingCurso, setEditingCurso] = useState<Curso | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
 
-  const [formData, setFormData] = useState<CursosDto>({
-    id: "",
-    nome: "",
-    descricao: "",
-    cargaHoraria: 0,
-    valor: 0,
-    inicioVigencia: "",
-    ativo: true,
-    status: "ATIVO",
+  const {
+    register,
+    handleSubmit: handleFormSubmit,
+    reset,
+  } = useForm<CursoFormData>({
+    resolver: zodResolver(cursoFormSchema),
+    defaultValues: {
+      id: "",
+      nome: "",
+      descricao: "",
+      cargaHoraria: 0,
+      valor: 0,
+      inicioVigencia: "",
+      ativo: true,
+      status: "ATIVO",
+    },
   });
 
   useEffect(() => {
@@ -70,7 +80,7 @@ export default function CursosPage() {
 
   function handleEdit(curso: Curso) {
     setEditingCurso(curso);
-    setFormData({
+    reset({
       id: curso.id,
       nome: curso.nome,
       descricao: curso.descricao || "",
@@ -85,7 +95,7 @@ export default function CursosPage() {
 
   function handleNew() {
     setEditingCurso(null);
-    setFormData({
+    reset({
       id: "",
       nome: "",
       descricao: "",
@@ -98,13 +108,23 @@ export default function CursosPage() {
     setDialogOpen(true);
   }
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  async function handleSubmit(data: CursoFormData) {
     try {
+      const cursoData: CursosDto = {
+        id: data.id || "",
+        nome: data.nome,
+        descricao: data.descricao,
+        cargaHoraria: data.cargaHoraria,
+        valor: data.valor,
+        inicioVigencia: data.inicioVigencia,
+        ativo: data.ativo,
+        status: data.status,
+      };
+
       if (editingCurso) {
-        await updateCurso(editingCurso.id, formData);
+        await updateCurso(editingCurso.id, cursoData);
       } else {
-        await createCurso(formData);
+        await createCurso(cursoData);
       }
       setDialogOpen(false);
       loadCursos();
@@ -147,7 +167,7 @@ export default function CursosPage() {
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-2xl">
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleFormSubmit(handleSubmit)}>
               <DialogHeader>
                 <DialogTitle>
                   {editingCurso ? "Editar Curso" : "Novo Curso"}
@@ -159,25 +179,11 @@ export default function CursosPage() {
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
                   <Label htmlFor="nome">Nome *</Label>
-                  <Input
-                    id="nome"
-                    value={formData.nome}
-                    onChange={(e) =>
-                      setFormData({ ...formData, nome: e.target.value })
-                    }
-                    required
-                  />
+                  <Input id="nome" {...register("nome")} />
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="descricao">Descrição</Label>
-                  <Textarea
-                    id="descricao"
-                    value={formData.descricao}
-                    onChange={(e) =>
-                      setFormData({ ...formData, descricao: e.target.value })
-                    }
-                    rows={4}
-                  />
+                  <Textarea id="descricao" {...register("descricao")} rows={4} />
                 </div>
                 <div className="grid grid-cols-3 gap-4">
                   <div className="grid gap-2">
@@ -188,14 +194,7 @@ export default function CursosPage() {
                       id="cargaHoraria"
                       type="number"
                       min="0"
-                      value={formData.cargaHoraria}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          cargaHoraria: parseInt(e.target.value) || 0,
-                        })
-                      }
-                      required
+                      {...register("cargaHoraria", { valueAsNumber: true })}
                     />
                   </div>
                   <div className="grid gap-2">
@@ -203,14 +202,7 @@ export default function CursosPage() {
                     <Input
                       id="inicioVigencia"
                       type="date"
-                      value={formData.inicioVigencia}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          inicioVigencia: e.target.value,
-                        })
-                      }
-                      required
+                      {...register("inicioVigencia")}
                     />
                   </div>
                   <div className="grid gap-2">
@@ -220,13 +212,7 @@ export default function CursosPage() {
                       type="number"
                       min="0"
                       step="0.01"
-                      value={formData.valor}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          valor: parseFloat(e.target.value) || 0,
-                        })
-                      }
+                      {...register("valor", { valueAsNumber: true })}
                     />
                   </div>
                 </div>
@@ -234,10 +220,7 @@ export default function CursosPage() {
                   <input
                     type="checkbox"
                     id="ativo"
-                    checked={formData.ativo}
-                    onChange={(e) =>
-                      setFormData({ ...formData, ativo: e.target.checked })
-                    }
+                    {...register("ativo")}
                     className="h-4 w-4"
                   />
                   <Label htmlFor="ativo">Curso ativo</Label>
