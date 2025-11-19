@@ -3,7 +3,8 @@
 import {
   Aluno,
   AlunosDto,
-  CursosDto,
+  Curso,
+  CursoCreateDto,
   TurmasDto,
   Matricula,
   SearchDto,
@@ -115,46 +116,50 @@ export async function deleteAluno(id: string): Promise<void> {
 
 // ========== CURSOS ==========
 
-export async function getCursos(): Promise<CursosDto[]> {
+export async function getCursos(): Promise<Curso[]> {
   // Fetch de cursos e depois que pegar a lista, entra em um laço para usar o id e buscar os valores atuais de cada curso
-  const cursos = await fetchAPI<CursosDto[]>("/cursos");
+  const cursos = await fetchAPI<Curso[]>("/cursos");
 
-  const cursoResponse: CursosDto[] = [];
-  for (let curso of cursos) {
-    const valores = await fetchAPI<CursoValor>(`/curso-valor/${curso.id}`);
-    //console.log("Valores do curso ", curso.id, valores);
-    curso = {
-      ...curso,
+  const cursoResponse: Curso[] = [];
+  for (const cursoOriginal of cursos) {
+    const valores = await fetchAPI<CursoValor>(`/curso-valor/${cursoOriginal.id}`);
+
+    // Mapeia explicitamente os valores do curso, mantendo type safety
+    const cursoComValores: Curso = {
+      ...cursoOriginal,
       valor: valores.valor,
       inicioVigencia: valores.inicioVigencia,
     };
-    cursoResponse.push(curso);
+
+    cursoResponse.push(cursoComValores);
   }
+
   console.log(cursoResponse);
   return cursoResponse;
 }
 
-export async function getCursoById(id: string): Promise<CursosDto> {
-  return fetchAPI<CursosDto>(`/cursos/${id}`);
+export async function getCursoById(id: string): Promise<Curso> {
+  return fetchAPI<Curso>(`/cursos/${id}`);
 }
 
 export async function getCursosLead(): Promise<unknown> {
   return fetchAPI<unknown>("/cursos/lead");
 }
 
-export async function createCurso(cursosDto: CursosDto): Promise<CursosDto> {
-  const cursoResponse = await fetchAPI<CursosDto>("/cursos", {
+export async function createCurso(cursoDto: CursoCreateDto): Promise<Curso> {
+  const cursoResponse = await fetchAPI<Curso>("/cursos", {
     method: "POST",
-    body: JSON.stringify(cursosDto),
+    body: JSON.stringify(cursoDto),
   });
 
   const cursoValor: CursoValoresDto = {
     curso: {
       id: cursoResponse.id,
     },
-    valor: cursosDto.valor || 0,
-    inicioVigencia: cursosDto.inicioVigencia || "1900-01-01",
+    valor: cursoDto.valor || 0,
+    inicioVigencia: cursoDto.inicioVigencia || "1900-01-01",
   };
+
   const cursoValorResponse = await fetchAPI<CursoValoresDto>(
     `/curso-valor/${cursoResponse.id}/valor`,
     {
@@ -176,20 +181,21 @@ export async function createCurso(cursosDto: CursosDto): Promise<CursosDto> {
 
 export async function updateCurso(
   id: string,
-  cursosDto: CursosDto
-): Promise<CursosDto> {
-  const cursoResponse = await fetchAPI<CursosDto>(`/cursos/${id}`, {
+  cursoDto: CursoCreateDto
+): Promise<Curso> {
+  const cursoResponse = await fetchAPI<Curso>(`/cursos/${id}`, {
     method: "PUT",
-    body: JSON.stringify(cursosDto),
+    body: JSON.stringify(cursoDto),
   });
 
   const cursoValor: CursoValoresDto = {
     curso: {
       id: cursoResponse.id,
     },
-    valor: cursosDto.valor || 0,
-    inicioVigencia: cursosDto.inicioVigencia || "1900-01-01",
+    valor: cursoDto.valor || 0,
+    inicioVigencia: cursoDto.inicioVigencia || "1900-01-01",
   };
+
   const cursoValorResponse = await fetchAPI<CursoValoresDto>(
     `/curso-valor/${cursoResponse.id}/valor`,
     {
@@ -205,6 +211,7 @@ export async function updateCurso(
       console.error("Erro ao criar valor do curso:", error);
       return cursoResponse;
     });
+
   return cursoValorResponse;
 }
 

@@ -28,7 +28,7 @@ import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { Input } from "@/components/ui/input";
 import { Plus, Pencil, Trash2, Search } from "lucide-react";
 import { getCursos, createCurso, updateCurso, deleteCurso } from "@/lib/api";
-import { Curso, CursosDto } from "@/types";
+import { Curso, CursoCreateDto } from "@/types";
 import { Badge } from "@/components/ui/badge";
 
 export default function CursosPage() {
@@ -48,7 +48,7 @@ export default function CursosPage() {
     try {
       setLoading(true);
       const data = await getCursos();
-      setCursos(data as unknown as Curso[]);
+      setCursos(data);
     } catch (error) {
       console.error("Erro ao carregar cursos:", error);
     } finally {
@@ -68,7 +68,7 @@ export default function CursosPage() {
 
   async function handleSubmit(data: CursoFormData) {
     try {
-      const cursoData: CursosDto = {
+      const cursoData: CursoCreateDto = {
         id: data.id || "",
         nome: data.nome,
         descricao: data.descricao,

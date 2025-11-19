@@ -64,23 +64,28 @@ export interface Curso {
   cargaHoraria: number;
   valor?: number;
   ativo: boolean;
-  createdAt?: string;
-  updatedAt?: string;
   status: string;
   inicioVigencia?: string;
+  cursoValor?: CursoValoresDto;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
-export interface CursosDto {
-  id: string;
+// Tipo para criação e atualização de cursos (DTO)
+export interface CursoCreateDto {
+  id?: string;
   nome: string;
   descricao?: string;
   cargaHoraria: number;
   valor?: number;
   ativo: boolean;
   status: string;
-  cursoValor?: CursoValoresDto;
   inicioVigencia?: string;
 }
+
+// Compatibilidade: CursosDto é agora um alias de Curso
+// @deprecated Use Curso instead
+export type CursosDto = Curso;
 
 export interface CursoValor {
   id: string;
