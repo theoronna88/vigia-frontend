@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { type AlunoFormData } from "./schema";
 import { AlunoForm } from "./components/aluno-form";
+import { useAlunos } from "./hooks/use-alunos";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -26,31 +27,14 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Plus, Pencil, Trash2, Search } from "lucide-react";
-import { getAlunos, createAluno, updateAluno, deleteAluno } from "@/lib/api";
+import { createAluno, updateAluno, deleteAluno } from "@/lib/api";
 import { Aluno, AlunosDto } from "@/types";
 
 export default function AlunosPage() {
-  const [alunos, setAlunos] = useState<Aluno[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { alunos, loading, refetch } = useAlunos();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingAluno, setEditingAluno] = useState<Aluno | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-
-  useEffect(() => {
-    loadAlunos();
-  }, []);
-
-  async function loadAlunos() {
-    try {
-      setLoading(true);
-      const data = await getAlunos();
-      setAlunos(data);
-    } catch (error) {
-      console.error("Erro ao carregar alunos:", error);
-    } finally {
-      setLoading(false);
-    }
-  }
 
   function handleEdit(aluno: Aluno) {
     setEditingAluno(aluno);
@@ -97,7 +81,7 @@ export default function AlunosPage() {
         await createAluno(alunoData);
       }
       setDialogOpen(false);
-      loadAlunos();
+      refetch();
     } catch (error) {
       console.error("Erro ao salvar aluno:", error);
       alert("Erro ao salvar aluno. Verifique os dados e tente novamente.");
@@ -108,7 +92,7 @@ export default function AlunosPage() {
     if (confirm("Tem certeza que deseja excluir este aluno?")) {
       try {
         await deleteAluno(id);
-        loadAlunos();
+        refetch();
       } catch (error) {
         console.error("Erro ao excluir aluno:", error);
         alert("Erro ao excluir aluno.");
