@@ -24,7 +24,7 @@ export const alunoFormSchema = z.object({
   cidade: z.string().optional(),
   estado: z.string().optional(),
   cep: z.string().optional(),
-  optin: z.boolean().default(true),
+  optin: z.boolean(),
 });
 
 export type AlunoFormData = z.infer<typeof alunoFormSchema>;

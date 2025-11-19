@@ -1,6 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { alunoFormSchema, type AlunoFormData } from "./schema";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -39,31 +42,38 @@ export default function AlunosPage() {
   const [editingAluno, setEditingAluno] = useState<Aluno | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
 
-  const [formData, setFormData] = useState<AlunosDto>({
-    id: "",
-    nome: "",
-    cpf: "",
-    rg: "",
-    orgaoEmissor: "",
-    sexo: "",
-    nacionalidade: "",
-    naturalidade: "",
-    nomeMae: "",
-    nomePai: "",
-    estadoCivil: "",
-    escolaridade: "",
-    profissao: "",
-    email: "",
-    telefone: "",
-    dataNascimento: "",
-    endereco: "",
-    numero: "",
-    complemento: "",
-    bairro: "",
-    cidade: "",
-    estado: "",
-    cep: "",
-    optin: true,
+  const {
+    register,
+    handleSubmit: handleFormSubmit,
+    reset,
+  } = useForm<AlunoFormData>({
+    resolver: zodResolver(alunoFormSchema),
+    defaultValues: {
+      id: "",
+      nome: "",
+      cpf: "",
+      rg: "",
+      orgaoEmissor: "",
+      sexo: "",
+      nacionalidade: "",
+      naturalidade: "",
+      nomeMae: "",
+      nomePai: "",
+      estadoCivil: "",
+      escolaridade: "",
+      profissao: "",
+      email: "",
+      telefone: "",
+      dataNascimento: "",
+      endereco: "",
+      numero: "",
+      complemento: "",
+      bairro: "",
+      cidade: "",
+      estado: "",
+      cep: "",
+      optin: true,
+    },
   });
 
   useEffect(() => {
@@ -84,7 +94,7 @@ export default function AlunosPage() {
 
   function handleEdit(aluno: Aluno) {
     setEditingAluno(aluno);
-    setFormData({
+    reset({
       id: aluno.id,
       nome: aluno.nome,
       cpf: aluno.cpf,
@@ -115,7 +125,7 @@ export default function AlunosPage() {
 
   function handleNew() {
     setEditingAluno(null);
-    setFormData({
+    reset({
       id: "",
       nome: "",
       cpf: "",
@@ -144,13 +154,39 @@ export default function AlunosPage() {
     setDialogOpen(true);
   }
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  async function handleSubmit(data: AlunoFormData) {
     try {
+      const alunoData: AlunosDto = {
+        id: data.id || "",
+        nome: data.nome,
+        cpf: data.cpf,
+        rg: data.rg,
+        orgaoEmissor: data.orgaoEmissor,
+        sexo: data.sexo,
+        nacionalidade: data.nacionalidade,
+        naturalidade: data.naturalidade,
+        nomeMae: data.nomeMae,
+        nomePai: data.nomePai,
+        estadoCivil: data.estadoCivil,
+        escolaridade: data.escolaridade,
+        profissao: data.profissao,
+        email: data.email,
+        telefone: data.telefone,
+        dataNascimento: data.dataNascimento,
+        endereco: data.endereco,
+        numero: data.numero,
+        complemento: data.complemento,
+        bairro: data.bairro,
+        cidade: data.cidade,
+        estado: data.estado,
+        cep: data.cep,
+        optin: data.optin,
+      };
+
       if (editingAluno) {
-        await updateAluno(editingAluno.id, formData);
+        await updateAluno(editingAluno.id, alunoData);
       } else {
-        await createAluno(formData);
+        await createAluno(alunoData);
       }
       setDialogOpen(false);
       loadAlunos();
@@ -196,7 +232,7 @@ export default function AlunosPage() {
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleFormSubmit(handleSubmit)}>
               <DialogHeader>
                 <DialogTitle>
                   {editingAluno ? "Editar Aluno" : "Novo Aluno"}
@@ -208,40 +244,19 @@ export default function AlunosPage() {
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
                   <Label htmlFor="nome">Nome *</Label>
-                  <Input
-                    id="nome"
-                    value={formData.nome}
-                    onChange={(e) =>
-                      setFormData({ ...formData, nome: e.target.value })
-                    }
-                    required
-                  />
+                  <Input id="nome" {...register("nome")} />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="grid gap-2">
                     <Label htmlFor="cpf">CPF *</Label>
-                    <Input
-                      id="cpf"
-                      value={formData.cpf}
-                      onChange={(e) =>
-                        setFormData({ ...formData, cpf: e.target.value })
-                      }
-                      required
-                    />
+                    <Input id="cpf" {...register("cpf")} />
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="dataNascimento">Data de Nascimento *</Label>
                     <Input
                       id="dataNascimento"
                       type="date"
-                      value={formData.dataNascimento}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          dataNascimento: e.target.value,
-                        })
-                      }
-                      required
+                      {...register("dataNascimento")}
                     />
                   </div>
                 </div>
@@ -249,185 +264,74 @@ export default function AlunosPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="grid gap-2">
                     <Label htmlFor="rg">RG *</Label>
-                    <Input
-                      id="rg"
-                      value={formData.rg}
-                      onChange={(e) =>
-                        setFormData({ ...formData, rg: e.target.value })
-                      }
-                      required
-                    />
+                    <Input id="rg" {...register("rg")} />
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="orgaoEmissor">Órgão Emissor *</Label>
-                    <Input
-                      id="orgaoEmissor"
-                      value={formData.orgaoEmissor}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          orgaoEmissor: e.target.value,
-                        })
-                      }
-                      required
-                    />
+                    <Input id="orgaoEmissor" {...register("orgaoEmissor")} />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="grid gap-2">
                     <Label htmlFor="naturalidade">Naturalidade</Label>
-                    <Input
-                      id="naturalidade"
-                      value={formData.naturalidade}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          naturalidade: e.target.value,
-                        })
-                      }
-                    />
+                    <Input id="naturalidade" {...register("naturalidade")} />
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="nacionalidade">Nacionalidade</Label>
-                    <Input
-                      id="nacionalidade"
-                      value={formData.nacionalidade}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          nacionalidade: e.target.value,
-                        })
-                      }
-                    />
+                    <Input id="nacionalidade" {...register("nacionalidade")} />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-3 gap-4">
                   <div className="grid gap-2">
                     <Label htmlFor="email">Email *</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={formData.email}
-                      onChange={(e) =>
-                        setFormData({ ...formData, email: e.target.value })
-                      }
-                      required
-                    />
+                    <Input id="email" type="email" {...register("email")} />
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="telefone">Telefone *</Label>
-                    <Input
-                      id="telefone"
-                      value={formData.telefone}
-                      onChange={(e) =>
-                        setFormData({ ...formData, telefone: e.target.value })
-                      }
-                      required
-                    />
+                    <Input id="telefone" {...register("telefone")} />
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="profissao">Profissão *</Label>
-                    <Input
-                      id="profissao"
-                      value={formData.profissao}
-                      onChange={(e) =>
-                        setFormData({ ...formData, profissao: e.target.value })
-                      }
-                      required
-                    />
+                    <Input id="profissao" {...register("profissao")} />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="grid gap-2">
                     <Label htmlFor="nomeMae">Nome Completo da Mãe *</Label>
-                    <Input
-                      id="nomeMae"
-                      value={formData.nomeMae}
-                      onChange={(e) =>
-                        setFormData({ ...formData, nomeMae: e.target.value })
-                      }
-                      required
-                    />
+                    <Input id="nomeMae" {...register("nomeMae")} />
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="nomePai">Nome Completo do Pai *</Label>
-                    <Input
-                      id="nomePai"
-                      value={formData.nomePai}
-                      onChange={(e) =>
-                        setFormData({ ...formData, nomePai: e.target.value })
-                      }
-                      required
-                    />
+                    <Input id="nomePai" {...register("nomePai")} />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-3 gap-4">
                   <div className="grid gap-2">
                     <Label htmlFor="sexo">Sexo *</Label>
-                    <Input
-                      id="sexo"
-                      value={formData.sexo}
-                      onChange={(e) =>
-                        setFormData({ ...formData, sexo: e.target.value })
-                      }
-                      required
-                    />
+                    <Input id="sexo" {...register("sexo")} />
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="estadoCivil">Estado Civil *</Label>
-                    <Input
-                      id="estadoCivil"
-                      value={formData.estadoCivil}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          estadoCivil: e.target.value,
-                        })
-                      }
-                      required
-                    />
+                    <Input id="estadoCivil" {...register("estadoCivil")} />
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="escolaridade">Escolaridade *</Label>
-                    <Input
-                      id="escolaridade"
-                      value={formData.escolaridade}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          escolaridade: e.target.value,
-                        })
-                      }
-                      required
-                    />
+                    <Input id="escolaridade" {...register("escolaridade")} />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-3 gap-4">
                   <div className="grid gap-2 col-span-2">
                     <Label htmlFor="endereco">Endereço</Label>
-                    <Input
-                      id="endereco"
-                      value={formData.endereco}
-                      onChange={(e) =>
-                        setFormData({ ...formData, endereco: e.target.value })
-                      }
-                    />
+                    <Input id="endereco" {...register("endereco")} />
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="numero">Número *</Label>
-                    <Input
-                      id="numero"
-                      value={formData.numero}
-                      onChange={(e) =>
-                        setFormData({ ...formData, numero: e.target.value })
-                      }
-                      required
-                    />
+                    <Input id="numero" {...register("numero")} />
                   </div>
                 </div>
 
@@ -435,33 +339,15 @@ export default function AlunosPage() {
                 <div className="grid grid-cols-3 gap-4">
                   <div className="grid gap-2">
                     <Label htmlFor="cidade">Cidade</Label>
-                    <Input
-                      id="cidade"
-                      value={formData.cidade}
-                      onChange={(e) =>
-                        setFormData({ ...formData, cidade: e.target.value })
-                      }
-                    />
+                    <Input id="cidade" {...register("cidade")} />
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="estado">Estado</Label>
-                    <Input
-                      id="estado"
-                      value={formData.estado}
-                      onChange={(e) =>
-                        setFormData({ ...formData, estado: e.target.value })
-                      }
-                    />
+                    <Input id="estado" {...register("estado")} />
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="cep">CEP</Label>
-                    <Input
-                      id="cep"
-                      value={formData.cep}
-                      onChange={(e) =>
-                        setFormData({ ...formData, cep: e.target.value })
-                      }
-                    />
+                    <Input id="cep" {...register("cep")} />
                   </div>
                 </div>
               </div>
