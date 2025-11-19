@@ -46,6 +46,7 @@ export default function AlunosPage() {
     register,
     handleSubmit: handleFormSubmit,
     reset,
+    formState: { errors },
   } = useForm<AlunoFormData>({
     resolver: zodResolver(alunoFormSchema),
     defaultValues: {
@@ -245,11 +246,17 @@ export default function AlunosPage() {
                 <div className="grid gap-2">
                   <Label htmlFor="nome">Nome *</Label>
                   <Input id="nome" {...register("nome")} />
+                  {errors.nome && (
+                    <p className="text-sm text-red-500">{errors.nome.message}</p>
+                  )}
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="grid gap-2">
                     <Label htmlFor="cpf">CPF *</Label>
                     <Input id="cpf" {...register("cpf")} />
+                    {errors.cpf && (
+                      <p className="text-sm text-red-500">{errors.cpf.message}</p>
+                    )}
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="dataNascimento">Data de Nascimento *</Label>
@@ -258,6 +265,11 @@ export default function AlunosPage() {
                       type="date"
                       {...register("dataNascimento")}
                     />
+                    {errors.dataNascimento && (
+                      <p className="text-sm text-red-500">
+                        {errors.dataNascimento.message}
+                      </p>
+                    )}
                   </div>
                 </div>
 
@@ -265,10 +277,18 @@ export default function AlunosPage() {
                   <div className="grid gap-2">
                     <Label htmlFor="rg">RG *</Label>
                     <Input id="rg" {...register("rg")} />
+                    {errors.rg && (
+                      <p className="text-sm text-red-500">{errors.rg.message}</p>
+                    )}
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="orgaoEmissor">Órgão Emissor *</Label>
                     <Input id="orgaoEmissor" {...register("orgaoEmissor")} />
+                    {errors.orgaoEmissor && (
+                      <p className="text-sm text-red-500">
+                        {errors.orgaoEmissor.message}
+                      </p>
+                    )}
                   </div>
                 </div>
 
@@ -287,14 +307,25 @@ export default function AlunosPage() {
                   <div className="grid gap-2">
                     <Label htmlFor="email">Email *</Label>
                     <Input id="email" type="email" {...register("email")} />
+                    {errors.email && (
+                      <p className="text-sm text-red-500">{errors.email.message}</p>
+                    )}
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="telefone">Telefone *</Label>
                     <Input id="telefone" {...register("telefone")} />
+                    {errors.telefone && (
+                      <p className="text-sm text-red-500">{errors.telefone.message}</p>
+                    )}
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="profissao">Profissão *</Label>
                     <Input id="profissao" {...register("profissao")} />
+                    {errors.profissao && (
+                      <p className="text-sm text-red-500">
+                        {errors.profissao.message}
+                      </p>
+                    )}
                   </div>
                 </div>
 
@@ -302,6 +333,9 @@ export default function AlunosPage() {
                   <div className="grid gap-2">
                     <Label htmlFor="nomeMae">Nome Completo da Mãe *</Label>
                     <Input id="nomeMae" {...register("nomeMae")} />
+                    {errors.nomeMae && (
+                      <p className="text-sm text-red-500">{errors.nomeMae.message}</p>
+                    )}
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="nomePai">Nome Completo do Pai *</Label>
@@ -313,6 +347,9 @@ export default function AlunosPage() {
                   <div className="grid gap-2">
                     <Label htmlFor="sexo">Sexo *</Label>
                     <Input id="sexo" {...register("sexo")} />
+                    {errors.sexo && (
+                      <p className="text-sm text-red-500">{errors.sexo.message}</p>
+                    )}
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="estadoCivil">Estado Civil *</Label>
@@ -332,6 +369,9 @@ export default function AlunosPage() {
                   <div className="grid gap-2">
                     <Label htmlFor="numero">Número *</Label>
                     <Input id="numero" {...register("numero")} />
+                    {errors.numero && (
+                      <p className="text-sm text-red-500">{errors.numero.message}</p>
+                    )}
                   </div>
                 </div>
 
