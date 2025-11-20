@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { type CursoFormData } from "./schema";
 import { CursoForm } from "./components/curso-form";
 import { useCursos } from "./hooks/use-cursos";
@@ -27,11 +28,12 @@ import {
 } from "@/components/ui/dialog";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { Input } from "@/components/ui/input";
-import { Plus, Pencil, Trash2, Search } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, Eye } from "lucide-react";
 import { Curso, CursoCreateDto } from "@/types";
 import { Badge } from "@/components/ui/badge";
 
 export default function CursosPage() {
+  const router = useRouter();
   const { cursos, loading, loadCursos, saveCurso, removeCurso } = useCursos();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingCurso, setEditingCurso] = useState<Curso | null>(null);
@@ -187,7 +189,16 @@ export default function CursosPage() {
                         <Button
                           variant="ghost"
                           size="icon"
+                          onClick={() => router.push(`/cursos/${curso.id}`)}
+                          title="Ver detalhes"
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
                           onClick={() => handleEdit(curso)}
+                          title="Editar"
                         >
                           <Pencil className="h-4 w-4" />
                         </Button>
@@ -195,6 +206,7 @@ export default function CursosPage() {
                           variant="ghost"
                           size="icon"
                           onClick={() => handleDelete(curso.id)}
+                          title="Excluir"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
