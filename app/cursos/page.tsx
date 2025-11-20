@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { type CursoFormData } from "./schema";
 import { CursoForm } from "./components/curso-form";
+import { useCursos } from "./hooks/use-cursos";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -19,21 +21,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Dialog,
-  DialogContent,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { Input } from "@/components/ui/input";
-import { Plus, Pencil, Trash2, Search } from "lucide-react";
-import { getCursos, createCurso, updateCurso, deleteCurso } from "@/lib/api";
+import { Plus, Pencil, Trash2, Search, Eye } from "lucide-react";
 import { Curso, CursoCreateDto } from "@/types";
 import { Badge } from "@/components/ui/badge";
 
 export default function CursosPage() {
-  const [cursos, setCursos] = useState<Curso[]>([]);
-  const [loading, setLoading] = useState(true);
+  const router = useRouter();
+  const { cursos, loading, loadCursos, saveCurso, removeCurso } = useCursos();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingCurso, setEditingCurso] = useState<Curso | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -42,19 +39,7 @@ export default function CursosPage() {
 
   useEffect(() => {
     loadCursos();
-  }, []);
-
-  async function loadCursos() {
-    try {
-      setLoading(true);
-      const data = await getCursos();
-      setCursos(data);
-    } catch (error) {
-      console.error("Erro ao carregar cursos:", error);
-    } finally {
-      setLoading(false);
-    }
-  }
+  }, [loadCursos]);
 
   function handleEdit(curso: Curso) {
     setEditingCurso(curso);
@@ -67,28 +52,20 @@ export default function CursosPage() {
   }
 
   async function handleSubmit(data: CursoFormData) {
-    try {
-      const cursoData: CursoCreateDto = {
-        id: data.id || "",
-        nome: data.nome,
-        descricao: data.descricao,
-        cargaHoraria: data.cargaHoraria,
-        valor: data.valor,
-        inicioVigencia: data.inicioVigencia,
-        ativo: data.ativo,
-        status: data.status,
-      };
+    const cursoData: CursoCreateDto = {
+      id: data.id || "",
+      nome: data.nome,
+      descricao: data.descricao,
+      cargaHoraria: data.cargaHoraria,
+      valor: data.valor,
+      inicioVigencia: data.inicioVigencia,
+      ativo: data.ativo,
+      status: data.status,
+    };
 
-      if (editingCurso) {
-        await updateCurso(editingCurso.id, cursoData);
-      } else {
-        await createCurso(cursoData);
-      }
+    const success = await saveCurso(cursoData, editingCurso?.id);
+    if (success) {
       setDialogOpen(false);
-      loadCursos();
-    } catch (error) {
-      console.error("Erro ao salvar curso:", error);
-      alert("Erro ao salvar curso. Verifique os dados e tente novamente.");
     }
   }
 
@@ -100,15 +77,11 @@ export default function CursosPage() {
   async function confirmDelete() {
     if (!cursoToDelete) return;
 
-    try {
-      await deleteCurso(cursoToDelete);
-      loadCursos();
-    } catch (error) {
-      console.error("Erro ao excluir curso:", error);
-      alert("Erro ao excluir curso.");
-    } finally {
-      setCursoToDelete(null);
+    const success = await removeCurso(cursoToDelete);
+    if (success) {
+      setConfirmDialogOpen(false);
     }
+    setCursoToDelete(null);
   }
 
   const filteredCursos = cursos.filter((curso) =>
@@ -212,7 +185,16 @@ export default function CursosPage() {
                         <Button
                           variant="ghost"
                           size="icon"
+                          onClick={() => router.push(`/cursos/${curso.id}`)}
+                          title="Ver detalhes"
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
                           onClick={() => handleEdit(curso)}
+                          title="Editar"
                         >
                           <Pencil className="h-4 w-4" />
                         </Button>
@@ -220,6 +202,7 @@ export default function CursosPage() {
                           variant="ghost"
                           size="icon"
                           onClick={() => handleDelete(curso.id)}
+                          title="Excluir"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
